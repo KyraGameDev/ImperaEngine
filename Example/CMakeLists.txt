@@ -1,0 +1,7 @@
+add_executable(Example Example.cpp)
+target_link_libraries(Example PRIVATE ImperaEngine)
+if(MINGW) 
+target_compile_options(Example PRIVATE -O3 -Wall)
+endif()
+install(TARGETS Example RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY Data DESTINATION ${CMAKE_INSTALL_PREFIX})
