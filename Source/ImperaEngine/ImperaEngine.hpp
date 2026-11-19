@@ -16,6 +16,7 @@
 
 namespace impera {
 
+	template<class T>
 	class GameState {
 	
 		bool m_ShouldDrawMap = true;
@@ -26,9 +27,21 @@ namespace impera {
 			m_ShouldDrawMap = value;
 		}
 	
+		template<class MapModeType>
+		void setActiveMapMode() {
+		
+		}
+		
+		template<class GameStateType>
+		void changeGameState() {
+		
+		}
+		
 		public:
 		
-		virtual bool init() = 0;
+		virtual bool onInit(T& worldData) = 0;
+		virtual void onEvent(const SDL_Event& event) = 0;
+		virtual void onUpdate(T& worldData) = 0;
 		
 		bool drawMapEnabled() const {
 			return m_ShouldDrawMap;
@@ -76,6 +89,7 @@ namespace impera {
 	}
 	
 	
+	template<class T>
 	class ImperaEngine {
 	
 		SDL_Window* m_Window = nullptr;
@@ -83,10 +97,10 @@ namespace impera {
 		
 		std::string m_Title = "ImperaEngine";
 		
-		std::shared_ptr<GameState> m_ActiveGameState = nullptr;
+		std::shared_ptr<GameState<T>> m_ActiveGameState = nullptr;
 		
-		std::unordered_map<std::type_index, std::unique_ptr<MapModeRenderer>> m_MapModeRenderers;
-		MapModeRenderer* m_ActiveMapModeRenderer = nullptr;
+		std::unordered_map<std::type_index, std::unique_ptr<MapModeRenderer<T>>> m_MapModeRenderers;
+		MapModeRenderer<T>* m_ActiveMapModeRenderer = nullptr;
 		
 		std::function<bool(ProvinceId, int, int, const Map*)> m_ProvinceBorderCheckFunc = &isProvinceBorder;
 		
@@ -99,15 +113,14 @@ namespace impera {
 			SDL_Quit();
 		}
 		
-		template<class T>
+		template<class GameStateType>
 		void setActiveGameState() {
-			m_ActiveGameState = std::make_unique<T>();
-			m_ActiveGameState->init();
+			m_ActiveGameState = std::make_unique<GameStateType>();
 		}
 		
-		template<class T>
+		template<class MapModeRendererType>
 		bool setDefaultMapModeRenderer() {
-			auto it = m_MapModeRenderers.find( std::type_index( typeid(T) ) );
+			auto it = m_MapModeRenderers.find( std::type_index( typeid(MapModeRendererType) ) );
 			if(it == m_MapModeRenderers.end()) {
 				return false;
 			}
@@ -115,9 +128,9 @@ namespace impera {
 			return true;
 		}
 		
-		template<class T>
+		template<class MapModeRendererType>
 		void registerMapModeRenderer() {
-			m_MapModeRenderers[ std::type_index(typeid(T)) ] = std::make_unique<T>();
+			m_MapModeRenderers[ std::type_index(typeid(MapModeRendererType)) ] = std::make_unique<MapModeRendererType>();
 		}
 		
 		void setTitle(const std::string& title) {
@@ -159,7 +172,6 @@ namespace impera {
 				return -3;
 			}
 				
-			impera::Map map;
 			
 			impera::JsonFile json;
 			if(!json.open("./Data/Map/ColorToProvince.json")) {
@@ -178,43 +190,12 @@ namespace impera {
 					}
 				}
 			}
-			
-			if(!json.open("./Data/Data/Provinces.json")) {
-				spdlog::error("Failed to load Provinces.json");
-				return -3;
+						
+			T map;
+			if(m_ActiveGameState) {
+				m_ActiveGameState->onInit(map);
 			}
 				
-			if (json.contains("Provinces")) {
-				for (const auto& province : json["Provinces"]) {
-					if (province.contains("Id") && province.contains("Owner")) {
-						const auto id = province["Id"].get<impera::ProvinceId>();
-						const auto owner = province["Owner"].get<impera::CountryId>();
-						const bool enabled = province["Enabled"].get<bool>();
-						map.addProvince( {id, owner, enabled} );
-					}
-				}
-			}
-				
-			if(!json.open("./Data/Data/Countries.json")) {
-				spdlog::error("Failed to load Countries.json");
-				return -3;
-			}
-
-			if (json.contains("Countries")) {
-				for (const auto& country : json["Countries"]) {
-					if (country.contains("Id") && country.contains("R") && country.contains("G") && country.contains("B")) {
-						const auto id = country["Id"].get<impera::CountryId>();
-						const auto r = country["R"].get<uint8_t>();
-						const auto g = country["G"].get<uint8_t>();
-						const auto b = country["B"].get<uint8_t>();
-						impera::Country c;
-						c.id = id;
-						c.color = {r,g,b,255};
-						map.addCountry(c);
-					}
-				}
-			}
-			
 			spdlog::info("Compile Map");
 			impera::MapCompiler mapCompiler;
 			if(!mapCompiler.compile("./Data/Map/Map.bmp", colorToProvinceMap, map)) {
@@ -223,7 +204,7 @@ namespace impera {
 			}
 			
 			spdlog::info("Create Impera::MapRenderer");
-			impera::MapRenderer mapRenderer;
+			impera::MapRenderer<T> mapRenderer;
 			if(!mapRenderer.init(&map)) {
 				spdlog::error("Failed to intialise Impera::MapRenderer");
 				return -4;
@@ -233,7 +214,7 @@ namespace impera {
 				
 			spdlog::info("Create Impera::Camera");
 			impera::Camera camera;
-			
+					
 			bool isOpen = true;
 			SDL_Event event;
 			float zoomFactor = 1.f;
@@ -281,12 +262,14 @@ namespace impera {
 						}
 						break;
 					}
+					m_ActiveGameState->onEvent(event);
 				}
 				SDL_RenderClear(m_Renderer);
 				if(m_ActiveGameState->drawMapEnabled()) {
 					mapRenderer.draw(m_Renderer, camera, m_ActiveMapModeRenderer);
 				}
 				SDL_RenderPresent(m_Renderer);
+				m_ActiveGameState->onUpdate(map);
 			}
 			spdlog::info("Finished");
 			return 0;

@@ -5,7 +5,7 @@
 // This custom map mode renderer draws every province by the color of the owning country.
 // It also draws the borders and changes the colors if the province is hovered or selected
 // This implementation is more or less the default MapModeRenderer who gets used if you do not set a custom map mode renderer
-class CustomMapModeRenderer : public impera::MapModeRenderer {
+class CustomMapModeRenderer : public impera::MapModeRenderer<impera::Map> {
 
 	impera::Color m_ProvinceBorderColor = {25,25,25,255};
 	impera::Color m_ProvinceBorderColorHovered = {50,50,50,255};
@@ -74,16 +74,61 @@ class CustomMapModeRenderer : public impera::MapModeRenderer {
 
 };
 
-class MainGameState : public impera::GameState {
+class MainGameState : public impera::GameState<impera::Map> {
 
 	public:
 	
-	virtual bool init() {
+	virtual bool onInit(impera::Map& data) {
 		// You can disable the drawing of the map with shouldDrawMap(false) ( IntroScreen a.s.o )
 		shouldDrawMap(true);
+		
+		impera::JsonFile json;
+		if(!json.open("./Data/Data/Provinces.json")) {
+			spdlog::error("Failed to load Provinces.json");
+			return -3;
+		}
+				
+		if (json.contains("Provinces")) {
+			for (const auto& province : json["Provinces"]) {
+				if (province.contains("Id") && province.contains("Owner")) {
+					const auto id = province["Id"].get<impera::ProvinceId>();
+					const auto owner = province["Owner"].get<impera::CountryId>();
+					const bool enabled = province["Enabled"].get<bool>();
+					data.addProvince( {id, owner, enabled} );
+				}
+			}
+		}
+			
+		if(!json.open("./Data/Data/Countries.json")) {
+			spdlog::error("Failed to load Countries.json");
+			return -3;
+		}
+
+		if (json.contains("Countries")) {
+			for (const auto& country : json["Countries"]) {
+				if (country.contains("Id") && country.contains("R") && country.contains("G") && country.contains("B")) {
+					const auto id = country["Id"].get<impera::CountryId>();
+					const auto r = country["R"].get<uint8_t>();
+					const auto g = country["G"].get<uint8_t>();
+					const auto b = country["B"].get<uint8_t>();
+					impera::Country c;
+					c.id = id;
+					c.color = {r,g,b,255};
+					data.addCountry(c);
+				}
+			}
+		}
 		return true;
 	}
-
+	
+	void onEvent(const SDL_Event& event) final {
+	
+	}
+	
+	void onUpdate(impera::Map& data) final {
+	
+	}
+	
 };
 
 // This function should check, if pixel [x,y] on [map] is a province border
@@ -94,12 +139,12 @@ bool my_province_border_check_func( impera::ProvinceId id, int x, int y, const i
 // This function should check, if pixel [x,y] on [map] is a country border
 bool my_country_border_check_func( const impera::Country* country, int x, int y, const impera::Map* map) {
 	return false;
-}	
+}
 
 int main(int argc, char** argv) {
 	
 	// Create the engine object
-	impera::ImperaEngine engine;
+	impera::ImperaEngine<impera::Map> engine;
 	engine.setTitle("ImperaEngine Example"); //Optional
 	//engine.setProvinceBorderCheckFunction( &my_province_border_check_func ); //Optional
 	//engine.setCountryBorderCheckFunction( &my_country_border_check_func ); //Optional
@@ -107,11 +152,7 @@ int main(int argc, char** argv) {
 	// You need at least one MapModeRenderer and set it as default MapModeRenderer
 	engine.registerMapModeRenderer<CustomMapModeRenderer>();
 	engine.setDefaultMapModeRenderer<CustomMapModeRenderer>();
-	
-	// If you want to use the default map mode renderer:
-	//engine.registerMapModeRenderer<impera::DefaultMapModeRenderer>();
-	//engine.setDefaultMapModeRenderer<impera::DefaultMapModeRenderer>();
-	
+			
 	// Set the active game state (not optional)
 	engine.setActiveGameState<MainGameState>(); 
 		

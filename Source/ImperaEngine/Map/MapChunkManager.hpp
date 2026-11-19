@@ -28,6 +28,7 @@ namespace impera {
 	};
 	
 	
+	template<class WorldStateDataType>
 	class MapModeRenderer {
 	
 		public:
@@ -37,69 +38,10 @@ namespace impera {
 									int y, 
 									const MapChunk* chunk, 
 									const Province* province, 
-									const Map* map, 
+									const WorldStateDataType* map, 
 									int chunkSize,
 									bool hovered,
 									bool selected) const = 0;
-	};
-	
-	class DefaultMapModeRenderer : public MapModeRenderer {
-	
-		Color m_ProvinceBorderColor = {0,0,0,255};
-		Color m_ProvinceBorderColorHovered = {0,0,0,255};
-		Color m_ProvinceBorderColorSelected = {0,0,0,255};
-		Color m_CountryBorderColor = {0,0,0,255};
-		Color m_CountryBorderColorHovered = {0,0,0,255};
-		Color m_CountryBorderColorSelected = {0,0,0,255};
-	
-		public:
-		
-		virtual Color getPixelColor(int x, 
-									int y, 
-									const MapChunk* chunk, 
-									const Province* province, 
-									const Map* map, 
-									int chunkSize,
-									bool hovered,
-									bool selected) const {
-			Color color = {0,0,0,255};
-			const std::size_t borderIndex = (std::size_t(y) * chunkSize + x);
-			if(province) {
-				const Country* country = map->getCountry(province->owner);
-				if( chunk->borderBuffer[borderIndex] == COUNTRY_BORDER) {
-					if(selected && province->enabled) {
-						color = m_CountryBorderColorSelected;
-					} else if(hovered && province->enabled) {
-						color = m_CountryBorderColorHovered;
-					} else {
-						color = m_CountryBorderColor;
-					}
-				} else if(chunk->borderBuffer[borderIndex] == PROVINCE_BORDER) {
-					if(selected && province->enabled) {
-						color = m_ProvinceBorderColorSelected;
-					} else if(hovered && province->enabled) {
-						color = m_ProvinceBorderColorHovered;
-					} else {
-						color = m_ProvinceBorderColor;
-					}
-				} else if(chunk->borderBuffer[borderIndex] == NO_BORDER) {
-					if(country) {
-						color = country->color;
-					}
-					if(selected && province->enabled) {
-						color.r += 50;
-						color.g += 50;
-						color.b += 50;
-					}else if(hovered && province->enabled) {
-						color.r += 25;
-						color.g += 25;
-						color.b += 25;
-					}
-				}
-			}
-			return color;
-			
-		}
 	};
 		
 	class MapChunkManager {
@@ -108,12 +50,6 @@ namespace impera {
 		
 		int m_ChunksX = 0;
 		int m_ChunksY = 0;
-
-		std::unordered_map<std::string, MapModeRenderer*>* m_MapModeRenderers = nullptr;
-
-		DefaultMapModeRenderer m_DefaultMapModeRenderer;
-		MapModeRenderer* m_ActiveMapMode = nullptr;
-
 
 		public:
 		~MapChunkManager() {
@@ -188,7 +124,8 @@ namespace impera {
 			return texture;
 		}
 		
-		void rebuildChunk(Map* map, MapChunk* chunk, Province* hovered, Province* selected, MapModeRenderer* renderer) {
+		template<class T>
+		void rebuildChunk(T* map, MapChunk* chunk, Province* hovered, Province* selected, MapModeRenderer<T>* renderer) {
 			if( !map || !chunk || !renderer) {
 				return;
 			}
