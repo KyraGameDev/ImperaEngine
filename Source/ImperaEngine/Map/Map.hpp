@@ -63,9 +63,13 @@ namespace impera {
 		
 		const Country* getCountry(CountryId id) const;
 		
+		const Country* getCountryByPixel(int x, int y) const;
+		
 		int getProvinceId(int x, int y) const;
 		
 		Province* getProvince(const SDL_FPoint& coord);
+
+		const Province* getProvince(const SDL_FPoint& coord) const;
 				
 	};
 	

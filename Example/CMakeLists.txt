@@ -1,4 +1,4 @@
-add_executable(Example Example.cpp)
+add_executable(Example WIN32 Example.cpp)
 target_link_libraries(Example PRIVATE ImperaEngine)
 if(MINGW) 
 target_compile_options(Example PRIVATE -O3 -Wall)

@@ -66,6 +66,14 @@ namespace impera {
 		}
 		return nullptr;
 	}
+	
+	const Country* Map::getCountryByPixel(int x, int y) const {
+		const Province* province = getProvince({float(x),float(y)});
+		if(!province) {
+			return nullptr;
+		}
+		return getCountry(province->owner);
+	}
 		
 	int Map::getProvinceId(int x, int y) const {
 		if(x < 0 || x >= m_Width) {
@@ -78,11 +86,20 @@ namespace impera {
 	}
 		
 	Province* Map::getProvince(const SDL_FPoint& coord) {
-		auto id = getProvinceId(coord.x,coord.y);
+		std::size_t id = getProvinceId(coord.x,coord.y);
 		if(id <= 0 || id > m_Provinces.size()) {
 			return nullptr;
 		}
 		auto& p = m_Provinces[id - 1];
+		return p.id == id ? &p : nullptr;
+	}
+	
+	const Province* Map::getProvince(const SDL_FPoint& coord) const {
+		std::size_t id = getProvinceId(coord.x,coord.y);
+		if(id <= 0 || id > m_Provinces.size()) {
+			return nullptr;
+		}
+		const auto& p = m_Provinces[id - 1];
 		return p.id == id ? &p : nullptr;
 	}
 }
