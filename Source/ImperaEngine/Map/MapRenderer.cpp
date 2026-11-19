@@ -1,4 +1,6 @@
 #include "MapRenderer.hpp"
+#include <iostream>
+
 
 namespace impera {
 
@@ -30,7 +32,7 @@ namespace impera {
 		if(province == m_HoveredProvince) {
 			return;
 		}
-		if(m_HoveredProvince) {
+		if(m_HoveredProvince && m_HoveredProvince->enabled) {
 			for(auto& chunk : m_HoveredProvince->chunks) {
 				impera::MapChunk* ch = m_MapChunkManager.getChunk( chunk );
 				if(ch) {
@@ -39,7 +41,7 @@ namespace impera {
 			}
 		}
 		m_HoveredProvince = province;
-		if(m_HoveredProvince) {
+		if(m_HoveredProvince && m_HoveredProvince->enabled) {
 			for(auto& chunk : m_HoveredProvince->chunks) {
 				impera::MapChunk* ch = m_MapChunkManager.getChunk( chunk );
 				if(ch) {
@@ -53,7 +55,7 @@ namespace impera {
 		if(m_HoveredProvince == m_SelectedProvince) {
 			return;
 		}
-		if(m_SelectedProvince) {
+		if(m_SelectedProvince && m_SelectedProvince->enabled) {
 			for(auto& chunk : m_SelectedProvince->chunks) {
 				impera::MapChunk* ch = m_MapChunkManager.getChunk( chunk );
 				if(ch) {
@@ -62,7 +64,8 @@ namespace impera {
 			}
 		}
 		m_SelectedProvince = m_HoveredProvince;
-		if(m_SelectedProvince) {
+		if(m_SelectedProvince && m_SelectedProvince->enabled) {
+			std::cout << "Selected province: " << m_SelectedProvince->id << std::endl;
 			for(auto& chunk : m_SelectedProvince->chunks) {
 				impera::MapChunk* ch = m_MapChunkManager.getChunk( chunk );
 				if(ch) {
@@ -72,8 +75,8 @@ namespace impera {
 		}
 	}
 	
-	void MapRenderer::draw(SDL_Renderer* renderer, const Camera& camera) {
-		if(!m_Map | !renderer) {
+	void MapRenderer::draw(SDL_Renderer* renderer, const Camera& camera, MapModeRenderer* mapModeRenderer) {
+		if(!m_Map | !renderer | !mapModeRenderer) {
 			return;
 		}
 		const SDL_FRect visible = camera.visibleWorldRect();
@@ -89,7 +92,7 @@ namespace impera {
 					continue;
 				}
 				if(chunk->dirty) {
-					m_MapChunkManager.rebuildChunk(m_Map, chunk, m_HoveredProvince, m_SelectedProvince);
+					m_MapChunkManager.rebuildChunk(m_Map, chunk, m_HoveredProvince, m_SelectedProvince, mapModeRenderer);
 					m_MapChunkManager.uploadChunk(renderer, chunk);
 				}
 					

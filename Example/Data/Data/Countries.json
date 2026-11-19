@@ -2,45 +2,109 @@
 	"Countries" : [
 		{  
 		   "Id" : 1,
-		   "R" : 125,
-		   "G" : 0,
-		   "B" : 0
+		   "R" : 75,
+		   "G" : 75,
+		   "B" : 75,
+		   "Description" : "Switzerland"
 		},
 		{  
 		   "Id" : 2,
-		   "R" : 0,
-		   "G" : 125,
-		   "B" : 0
+		   "R" : 75,
+		   "G" : 75,
+		   "B" : 75,
+		   "Description" : "Austria"
 		},
 		{  
 		   "Id" : 3,
-		   "R" : 0,
-		   "G" : 0,
-		   "B" : 125
+		   "R" : 25,
+		   "G" : 25,
+		   "B" : 100,
+		   "Description" : "Ocean"
 		},
 		{  
 		   "Id" : 4,
-		   "R" : 125,
-		   "G" : 0,
-		   "B" : 125
+		   "R" : 75,
+		   "G" : 75,
+		   "B" : 75,
+		   "Description" : "Italy"
 		},
 		{  
 		   "Id" : 5,
-		   "R" : 100,
-		   "G" : 25,
-		   "B" : 25
+		   "R" : 75,
+		   "G" : 75,
+		   "B" : 75,
+		   "Description" : "Czechoslovakia"
 		},
 		{  
 		   "Id" : 6,
-		   "R" : 25,
-		   "G" : 25,
-		   "B" : 100
+		   "R" : 75,
+		   "G" : 75,
+		   "B" : 75,
+		   "Description" : "Poland"
+		   
 		},
 		{  
 		   "Id" : 7,
-		   "R" : 25,
+		   "R" : 75,
+		   "G" : 75,
+		   "B" : 75,
+		   "Description" : "Hungary"
+		},
+		{  
+		   "Id" : 8,
+		   "R" : 75,
+		   "G" : 75,
+		   "B" : 75,
+		   "Description" : "France"
+		},
+		{  
+		   "Id" : 9,
+		   "R" : 75,
+		   "G" : 75,
+		   "B" : 75,
+		   "Description" : "Netherlands"
+		},
+		{  
+		   "Id" : 10,
+		   "R" : 75,
+		   "G" : 75,
+		   "B" : 75,
+		   "Description" : "Yugoslavia"
+		},
+		{  
+		   "Id" : 11,
+		   "R" : 100,
 		   "G" : 100,
-		   "B" : 25
+		   "B" : 125,
+		   "Description" : "Bayern"
+		},
+		{  
+		   "Id" : 12,
+		   "R" : 95,
+		   "G" : 95,
+		   "B" : 150,
+		   "Description" : "Württemberg"
+		},
+		{  
+		   "Id" : 13,
+		   "R" : 110,
+		   "G" : 110,
+		   "B" : 170,
+		   "Description" : "Baden"
+		},
+		{  
+		   "Id" : 14,
+		   "R" : 120,
+		   "G" : 120,
+		   "B" : 150,
+		   "Description" : "Hessen"
+		},
+		{  
+		   "Id" : 99,
+		   "R" : 200,
+		   "G" : 200,
+		   "B" : 200,
+		   "Description" : "Temp"
 		}
 	]
 }

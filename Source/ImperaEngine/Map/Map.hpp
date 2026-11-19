@@ -24,6 +24,7 @@ namespace impera {
 	struct Province {
 		ProvinceId id;
 		CountryId owner;
+		bool enabled = true;
 		float minX, minY;
 		float maxX, maxY;
 		std::unordered_set<int> chunks;
